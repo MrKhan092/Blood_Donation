@@ -39,6 +39,10 @@ const Login = () => {
     setLoading(false);
   };
 
+  const handleGoogleLogin = () => {
+    window.location.href = 'http://localhost:5001/api/auth/google';
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-red-50 flex items-center justify-center p-4">
       {/* Background Animation */}
@@ -145,6 +149,7 @@ const Login = () => {
 
             <button 
               type="button"
+              onClick={handleGoogleLogin}
               className="w-full border-2 border-gray-300 py-3 rounded-lg font-semibold hover:border-red-600 hover:text-red-600 transition-all flex items-center justify-center gap-2"
             >
               <svg viewBox="0 0 24 24" className="w-5 h-5">

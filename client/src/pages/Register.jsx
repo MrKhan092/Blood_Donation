@@ -5,7 +5,7 @@ import { Heart, Mail, Lock, User, Phone, MapPin, Building2, FileText, Droplet, A
 
 const Register = () => {
   const navigate = useNavigate();
-  const { register, googleAuth } = useAuth();
+  const { register } = useAuth();
   
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -131,7 +131,7 @@ const Register = () => {
   };
 
   const handleGoogleSignup = () => {
-    setError('Google Sign-In integration pending. Please use email/password.');
+    window.location.href = 'http://localhost:5001/api/auth/google';
   };
 
   return (

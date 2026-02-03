@@ -356,7 +356,7 @@ const Landing = () => {
           
           {/* Copyright */}
           <div className="border-t border-gray-800 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2024 BloodConnect. All rights reserved. Every drop counts! 🩸</p>
+            <p>&copy; 2026 BloodConnect. All rights reserved. Every drop counts! 🩸</p>
           </div>
         </div>
       </footer>

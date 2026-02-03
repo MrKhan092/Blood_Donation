@@ -4,10 +4,14 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
+// const passport = require('./config/passport');
 const connectDB = require('./config/db');
-
-// Load environment variables
+const passport = require('passport');
 dotenv.config();
+
+require('./config/passport'); 
+// Load environment variables
 
 // Connect to MongoDB
 connectDB();
@@ -29,12 +33,28 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Session middleware - BEFORE passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'blood-connect-session-secret-2024',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    httpOnly: true,
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Passport middleware - AFTER session
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 }
 
-// DEBUG MIDDLEWARE - ADD THIS TO SEE WHAT'S HAPPENING
+// Simple request logging
 app.use((req, res, next) => {
   if (process.env.NODE_ENV === 'development') {
     console.log(`${req.method} ${req.path}`);
@@ -101,7 +121,7 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 const server = app.listen(PORT, () => {
   console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

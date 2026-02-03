@@ -1,8 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
-// Configure axios to NOT use any baseURL - let Vite proxy handle it
-axios.defaults.baseURL = ''; // ← ADD THIS LINE
+axios.defaults.baseURL = '';
 
 const AuthContext = createContext();
 
@@ -19,20 +18,10 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on mount
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      // Set default authorization header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      // Fetch user data
-      fetchUser();
-    } else {
-      setLoading(false);
-    }
+    loadUserFromToken();
   }, []);
 
-  // Fetch current user
   const fetchUser = async () => {
     try {
       const response = await axios.get('/api/auth/me');
@@ -43,68 +32,66 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       delete axios.defaults.headers.common['Authorization'];
       setIsAuthenticated(false);
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
-  // Register function
+  const loadUserFromToken = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+    await fetchUser();
+  };
+
   const register = async (userData) => {
     try {
-      console.log('Registering user with data:', userData);
-
       const response = await axios.post('/api/auth/register', userData);
-      
-      console.log('Registration response:', response.data);
 
       if (response.data.success) {
         const { token, user } = response.data;
-        
+
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+
         setUser(user);
         setIsAuthenticated(true);
-        
+
         return { success: true };
       }
-      
+
       return { success: false, message: 'Registration failed' };
     } catch (error) {
-      console.error('Registration error:', error.response?.data || error);
-      
       return {
         success: false,
-        message: error.response?.data?.message || 'Registration failed. Please try again.'
+        message: error.response?.data?.message || 'Registration failed'
       };
     }
   };
 
-  // Login function
   const login = async (email, password) => {
     try {
-      console.log('Logging in with:', { email });
-
       const response = await axios.post('/api/auth/login', { email, password });
-      
-      console.log('Login response:', response.data);
 
       if (response.data.success) {
         const { token, user } = response.data;
-        
+
         localStorage.setItem('token', token);
         axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        
+
         setUser(user);
         setIsAuthenticated(true);
-        
+
         return { success: true };
       }
-      
+
       return { success: false, message: 'Login failed' };
     } catch (error) {
-      console.error('Login error:', error.response?.data || error);
-      
       return {
         success: false,
         message: error.response?.data?.message || 'Invalid credentials'
@@ -112,15 +99,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Google Auth (placeholder)
-  const googleAuth = async () => {
-    return {
-      success: false,
-      message: 'Google authentication not implemented yet'
-    };
-  };
-
-  // Logout function
   const logout = () => {
     localStorage.removeItem('token');
     delete axios.defaults.headers.common['Authorization'];
@@ -134,8 +112,8 @@ export const AuthProvider = ({ children }) => {
     loading,
     register,
     login,
-    googleAuth,
-    logout
+    logout,
+    loadUserFromToken
   };
 
   return (
